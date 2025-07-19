@@ -31,9 +31,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
 
 dev_dependencies:
   flutter_test:
@@ -44,9 +44,12 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  http: ^1.4.0
+  provider: ^6.1.0
+  fl_chart: ^1.0.0
+  flutter_svg: ^2.0.10 # (verifique a versão mais recente)
 
-# For information on the generic Dart part of this file, see the
+ # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
@@ -55,6 +58,9 @@ flutter:
     - assets/fundo.png
     - assets/fundo2.png
     - assets/fundqo.png
+    - assets/cursor.png
+    - assets/logo.svg
+
 
   fonts:
     - family: Fredoka
@@ -63,6 +69,9 @@ flutter:
     - family: Quicksand
       fonts:
         - asset: assets/Quicksand.ttf
+    - family: Goldman
+      fonts:
+        - asset: assets/Goldman.ttf
 
 
 
