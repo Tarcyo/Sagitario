@@ -145,6 +145,16 @@ class LoginScreen extends StatelessWidget {
             ),
             SizedBox(height: isMobile ? 24 : 32),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 48 : 60,
+                  vertical: isMobile ? 14 : 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                backgroundColor: Colors.lightBlue.withOpacity(0.18),
+              ),
               onPressed: () async {
                 final uri = Uri.parse('http://localhost:3000/auth/login');
                 final headers = {'Content-Type': 'application/json'};
@@ -199,7 +209,7 @@ class LoginScreen extends StatelessWidget {
                   );
                 }
               },
-              child: Text('Login'),
+              child: Text('Login',style: TextStyle(color: Colors.white),),
             ),
             // Aqui adicionamos o texto "Não possui conta?"
             SizedBox(height: isMobile ? 16 : 24),

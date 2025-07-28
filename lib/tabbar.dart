@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:sagitario/telaDeRegistro.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_svg/svg.dart';
+
 class AlunoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
@@ -112,7 +113,7 @@ class _TelaDoSideBarState extends State<TelaDoSideBar> {
             width: 240,
             child: Column(
               children: [
-              Center(
+                Center(
                   child: SvgPicture.asset(
                     'assets/logo.svg',
                     width: 300,
@@ -443,29 +444,36 @@ class _DashboardScreenState extends State<DashboardScreen>
             body: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Dashboard',
-                      style: TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 2,
+                // Apply white as default text color and Goldman font for all descendants
+                child: DefaultTextStyle(
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'Goldman',
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Dashboard',
+                        style: const TextStyle(
+                          fontSize: 48,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
+                          fontFamily: 'Goldman', // explicit for clarity
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    _buildOverviewCards(),
-                    const SizedBox(height: 24),
-                    _buildStudentSelector(),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: _selectedStudent == 'Todos'
-                          ? _buildGeneralInsights()
-                          : _buildStudentDetail(_selectedStudent),
-                    ),
-                  ],
+                      const SizedBox(height: 24),
+                      _buildOverviewCards(),
+                      const SizedBox(height: 24),
+                      _buildStudentSelector(),
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: _selectedStudent == 'Todos'
+                            ? _buildGeneralInsights()
+                            : _buildStudentDetail(_selectedStudent),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -520,6 +528,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                           style: TextStyle(
                             color: Colors.blue.withOpacity(0.7),
                             fontSize: 10,
+                            fontFamily: 'Goldman',
                           ),
                         );
                       },
@@ -562,6 +571,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                           style: TextStyle(
                             color: Colors.blue.withOpacity(0.7),
                             fontSize: 10,
+                            fontFamily: 'Goldman',
                           ),
                         );
                       },
@@ -622,6 +632,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               fontSize: 18,
               fontWeight: FontWeight.w600,
               color: Colors.blue.withOpacity(0.7),
+              fontFamily: 'Goldman',
             ),
           ),
           const SizedBox(height: 8),
@@ -651,7 +662,11 @@ class _DashboardScreenState extends State<DashboardScreen>
         children: [
           Text(
             title,
-            style: TextStyle(fontSize: 16, color: Colors.blue.withOpacity(0.7)),
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.blue.withOpacity(0.7),
+              fontFamily: 'Goldman',
+            ),
           ),
           SizedBox(height: 8),
           Text(
@@ -659,7 +674,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              fontFamily: 'Goldman',
             ),
           ),
         ],
@@ -676,6 +691,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
+          style: const TextStyle(color: Colors.white, fontFamily: 'Goldman'),
           dropdownColor: Colors.blue.withOpacity(0.9),
           value: _selectedStudent,
           icon: Icon(Icons.arrow_drop_down, color: Colors.white),
@@ -683,7 +699,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               .map(
                 (s) => DropdownMenuItem(
                   value: s,
-                  child: Text(s, style: TextStyle(color: Colors.black87)),
+                  child: Text(s, style: const TextStyle(fontFamily: 'Goldman')),
                 ),
               )
               .toList(),
@@ -697,7 +713,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Center(
       child: Text(
         'Visão geral do professor: média mensal, atrasos e disciplinas ativas.',
-        style: TextStyle(color: Colors.blue.withOpacity(0.7), fontSize: 18),
+        style: const TextStyle(fontSize: 18, fontFamily: 'Goldman'),
         textAlign: TextAlign.center,
       ),
     );
@@ -710,11 +726,11 @@ class _DashboardScreenState extends State<DashboardScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Relatório de $aluno',
-            style: TextStyle(
+            'Relatório de \$aluno',
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              fontFamily: 'Goldman',
             ),
           ),
           const SizedBox(height: 16),
