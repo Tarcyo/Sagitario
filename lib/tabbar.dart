@@ -267,25 +267,28 @@ class GeolocalizacaoScreen extends StatefulWidget {
 class _GeolocalizacaoScreenState extends State<GeolocalizacaoScreen>
     with SingleTickerProviderStateMixin {
   bool _activated = false;
-  late AnimationController _pulseController;
+
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
+    // Controller sempre de 0 a 1
     _pulseController =
         AnimationController(
           vsync: this,
-          duration: const Duration(seconds: 1),
-          lowerBound: 0.95,
-          upperBound: 1.05,
+          duration: const Duration(milliseconds: 200),
         )..addStatusListener((status) {
           if (status == AnimationStatus.completed) {
             _pulseController.reverse();
-          } else if (status == AnimationStatus.dismissed) {
-            _pulseController.forward();
           }
         });
-    _pulseController.forward();
+
+    // Tween para ir de 0.9 até 1.1, aplicando uma curva “bounce”
+    _pulseAnimation = Tween<double>(begin: 0.9, end: 1.1).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeOutBack),
+    );
   }
 
   @override
@@ -294,7 +297,8 @@ class _GeolocalizacaoScreenState extends State<GeolocalizacaoScreen>
     super.dispose();
   }
 
-  void _toggleActivation() {
+  void _onTap() {
+    _pulseController.forward(from: 0);
     setState(() => _activated = !_activated);
   }
 
@@ -302,11 +306,9 @@ class _GeolocalizacaoScreenState extends State<GeolocalizacaoScreen>
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 500),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: _activated
-              ? [Colors.transparent, Colors.transparent]
-              : [Colors.transparent, Colors.transparent],
+          colors: [Colors.transparent, Colors.transparent],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -317,17 +319,18 @@ class _GeolocalizacaoScreenState extends State<GeolocalizacaoScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
+              const Text(
                 'Geolocalização',
                 style: TextStyle(fontSize: 60, color: Colors.white),
               ),
               const SizedBox(height: 40),
               ScaleTransition(
-                scale: _pulseController,
+                scale: _pulseAnimation,
                 child: GestureDetector(
-                  onTap: _toggleActivation,
+                  onTap: _onTap,
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 60,
                       vertical: 24,
@@ -337,14 +340,15 @@ class _GeolocalizacaoScreenState extends State<GeolocalizacaoScreen>
                       color: _activated
                           ? Colors.redAccent.shade200
                           : Colors.greenAccent.shade400,
-
                       boxShadow: [
                         BoxShadow(
-                          color: _activated
-                              ? Colors.redAccent.withOpacity(0.7)
-                              : Colors.greenAccent.withOpacity(0.7),
-                          blurRadius: 20,
-                          spreadRadius: 4,
+                          color:
+                              (_activated
+                                      ? Colors.redAccent
+                                      : Colors.greenAccent)
+                                  .withOpacity(0.5),
+                          blurRadius: 12,
+                          spreadRadius: 2,
                         ),
                       ],
                     ),
@@ -352,12 +356,11 @@ class _GeolocalizacaoScreenState extends State<GeolocalizacaoScreen>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 300),
-                          transitionBuilder: (child, animation) =>
-                              RotationTransition(
-                                turns: animation,
-                                child: child,
-                              ),
+                          duration: const Duration(milliseconds: 250),
+                          transitionBuilder: (child, anim) => FadeTransition(
+                            opacity: anim,
+                            child: ScaleTransition(scale: anim, child: child),
+                          ),
                           child: Icon(
                             _activated ? Icons.location_off : Icons.location_on,
                             key: ValueKey<bool>(_activated),

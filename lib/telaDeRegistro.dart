@@ -1,5 +1,3 @@
-
-
 // Flutter sidebar with responsive tabbar text size
 import 'package:flutter/material.dart';
 
@@ -8,7 +6,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:sagitario/providers/authProvider.dart';
-
 
 class TelaDeRegistro extends StatefulWidget {
   @override
@@ -27,6 +24,7 @@ class _TelaDeRegistroState extends State<TelaDeRegistro> {
   // Controllers
   final _nameController = TextEditingController();
   final _descController = TextEditingController();
+  final _totalClassesController = TextEditingController();
 
   // i Diciplina
   final _idDiscipline1 = TextEditingController();
@@ -78,11 +76,17 @@ class _TelaDeRegistroState extends State<TelaDeRegistro> {
     }
   }
 
-  // Criar nova disciplina
   Future<void> _createDisciplina() async {
     final name = _nameController.text.trim();
     final desc = _descController.text.trim();
-    if (name.isEmpty || desc.isEmpty) return;
+    final totalText = _totalClassesController.text.trim();
+    if (name.isEmpty || desc.isEmpty || totalText.isEmpty) return;
+
+    final totalClasses = int.tryParse(totalText);
+    if (totalClasses == null || totalClasses <= 0) {
+      _showError('Total de aulas inválido');
+      return;
+    }
 
     try {
       final token = Provider.of<AuthProvider>(context, listen: false).token;
@@ -92,14 +96,19 @@ class _TelaDeRegistroState extends State<TelaDeRegistro> {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: json.encode({'name': name, 'description': desc}),
+        body: json.encode({
+          'name': name,
+          'description': desc,
+          'total_classes': totalClasses,
+        }),
       );
       if (resp.statusCode == 201) {
         _nameController.clear();
         _descController.clear();
+        _totalClassesController.clear();
         _fetchDisciplinas();
       } else {
-        _showError('Erro ao criar disciplina (${resp.statusCode})');
+        _showError('Erro ao criar disciplina (${resp.body.toString()})');
       }
     } catch (e) {
       _showError('Erro de conexão');
@@ -153,16 +162,20 @@ class _TelaDeRegistroState extends State<TelaDeRegistro> {
           'end_time': end,
         }),
       );
-      if (resp.statusCode == 200) {
+
+      // Aceitar qualquer 2xx (documentação costuma retornar 201 para criação)
+      if (resp.statusCode >= 200 && resp.statusCode < 300) {
         _dayController.clear();
         _startController.clear();
         _endController.clear();
         _fetchDisciplinas();
       } else {
-        _showError('Erro ao criar horário (${resp.body})');
+        _showError(
+          'Erro ao criar horário (status ${resp.statusCode}: ${resp.body})',
+        );
       }
     } catch (e) {
-      _showError('Erro de conexão');
+      _showError('Erro de conexão: ${e.toString()}');
     }
   }
 
@@ -244,6 +257,14 @@ class _TelaDeRegistroState extends State<TelaDeRegistro> {
                 TextField(
                   controller: _descController,
                   decoration: _inputDecoration('Descrição'),
+                  style: TextStyle(
+                    color: Colors.white,
+                  ), // <- Aqui você define a cor do texto digitado
+                ),
+                SizedBox(height: 12),
+                TextField(
+                  controller: _totalClassesController,
+                  decoration: _inputDecoration('Total de aulas'),
                   style: TextStyle(
                     color: Colors.white,
                   ), // <- Aqui você define a cor do texto digitado
@@ -428,14 +449,16 @@ class _TelaDeRegistroState extends State<TelaDeRegistro> {
                         ),
                         onTap: () {
                           print("o valor é " + d.toString());
-                          final sched = d['schedule'];
+                          final sched = List<Map<String, dynamic>>.from(
+                            d['schedule'] ?? [],
+                          );
                           final students = List<Map<String, dynamic>>.from(
                             d['students'] ?? [],
                           );
                           final teacher =
                               d['teacher']; // Supondo que o back retorne um objeto teacher
-
                           final sala = d['classroom'];
+
                           showDialog(
                             context: context,
                             builder: (_) => AlertDialog(
@@ -444,41 +467,53 @@ class _TelaDeRegistroState extends State<TelaDeRegistro> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    if (sched != null) ...[
-                                      Text(
-                                        'Dia da semana: ' +
-                                            sched['day_of_week'].toString(),
-                                      ),
-                                      Text(
-                                        'Início: ' +
-                                            sched['start_time'].toString(),
-                                      ),
-                                      Text(
-                                        'Término: ' +
-                                            sched['end_time'].toString(),
-                                      ),
+                                    if (sched.isNotEmpty) ...[
+                                      Text('Horários:'),
+                                      SizedBox(height: 8),
+                                      ...sched
+                                          .map<Widget>(
+                                            (s) => Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'Dia da semana: ${s['day_of_week']?.toString() ?? ''}',
+                                                ),
+                                                Text(
+                                                  'Início: ${s['start_time']?.toString() ?? ''}',
+                                                ),
+                                                Text(
+                                                  'Término: ${s['end_time']?.toString() ?? ''}',
+                                                ),
+                                                SizedBox(height: 12),
+                                              ],
+                                            ),
+                                          )
+                                          .toList(),
+                                    ] else ...[
+                                      Text('Nenhum horário cadastrado.'),
                                       SizedBox(height: 12),
                                     ],
                                     Text(
-                                      'Professor: ${teacher != null ? teacher['name'] : 'Nenhum inscrito'}',
+                                      'Professor: ${teacher != null ? (teacher['name'] ?? '') : 'Nenhum inscrito'}',
                                     ),
                                     SizedBox(height: 12),
                                     Text('Alunos Inscritos:'),
                                     if (students.isNotEmpty)
-                                      ...students.map(
-                                        (s) =>
-                                            Text('- ' + s['name'.toString()]),
-                                      )
+                                      ...students
+                                          .map<Widget>(
+                                            (s) => Text('- ${s['name'] ?? ''}'),
+                                          )
+                                          .toList()
                                     else
                                       Text('Nenhum aluno inscrito.'),
                                     SizedBox(height: 12),
                                     Text(
-                                      'Sala de aula: ${sala != null ? sala['name'] : ''}',
+                                      'Sala de aula: ${sala != null ? (sala['name'] ?? '') : ''}',
                                     ),
                                   ],
                                 ),
                               ),
-
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.of(context).pop(),
@@ -539,159 +574,174 @@ class _TelaDeRegistroState extends State<TelaDeRegistro> {
       fillColor: Colors.blue.withOpacity(0.1),
     );
   }
-// Controllers
-final _filterController = TextEditingController();
 
-// Estado
-List<Map<String, dynamic>> _users = [];
-bool _loadingUsers = false;
+  // Controllers
+  final _filterController = TextEditingController();
 
-String get _usersUrl => 'http://localhost:3001/user';
+  // Estado
+  List<Map<String, dynamic>> _users = [];
+  bool _loadingUsers = false;
 
-// Buscar alunos e/ou professores
-Future<void> _fetchUsers() async {
-  setState(() => _loadingUsers = true);
-  try {
-    final token = Provider.of<AuthProvider>(context, listen: false).token;
-    // monta query params somente se o filtro não estiver vazio
-    final filter = _filterController.text.trim();
-    final uri = Uri.parse(_usersUrl).replace(
-      queryParameters: filter.isNotEmpty ? {'filterBy': filter} : null,
-    );
-    final resp = await http.get(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-    if (resp.statusCode == 200) {
-      final data = json.decode(resp.body);
-      setState(() {
-        _users = List<Map<String, dynamic>>.from(data['users']);
-      });
-    } else {
-      _showError('Erro ao buscar usuários (${resp.statusCode})');
+  String get _usersUrl => 'http://localhost:3001/user';
+
+  // Buscar alunos e/ou professores
+  Future<void> _fetchUsers() async {
+    setState(() => _loadingUsers = true);
+    try {
+      final token = Provider.of<AuthProvider>(context, listen: false).token;
+      // monta query params somente se o filtro não estiver vazio
+      final filter = _filterController.text.trim();
+      final uri = Uri.parse(_usersUrl).replace(
+        queryParameters: filter.isNotEmpty ? {'filterBy': filter} : null,
+      );
+      final resp = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (resp.statusCode == 200) {
+        final data = json.decode(resp.body);
+        setState(() {
+          _users = List<Map<String, dynamic>>.from(data['users']);
+        });
+      } else {
+        _showError('Erro ao buscar usuários (${resp.statusCode})');
+      }
+    } catch (e) {
+      _showError('Erro de conexão');
+    } finally {
+      setState(() => _loadingUsers = false);
     }
-  } catch (e) {
-    _showError('Erro de conexão');
-  } finally {
-    setState(() => _loadingUsers = false);
   }
-}
 
-// Bloco de UI para buscar e listar usuários
-Widget _buildUsersTab(bool isMobile) {
-  return Padding(
-    padding: const EdgeInsets.all(16.0),
-    child: ListView(
-      children: [
-        _sectionCard(
-          title: 'Buscar Usuários',
-          child: Column(
-            children: [
-              TextField(
-                controller: _filterController,
-                decoration: _inputDecoration(
-                  'Filtrar por (student|teacher)',
-                ),
-                style: TextStyle(color: Colors.white),
-              ),
-              SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: _fetchUsers,
-                child: Text('Buscar'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue.withOpacity(0.1),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                ),
-              ),
-            ],
-          ),
-        ),
-        _sectionCard(
-          title: 'Resultado da Busca',
-          child: _loadingUsers
-              ? Center(child: CircularProgressIndicator())
-              : Column(
-                  children: _users.map((u) {
-                    return ListTile(
-                      title: Text(
-                        u['name'] ?? '',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      subtitle: Text(
-                        '${u['email']} • ${u['type']}',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                      trailing: SelectableText(
-                        u['id'] ?? '',
-                        style: TextStyle(fontSize: 10, color: Colors.grey),
-                      ),
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (_) => AlertDialog(
-                            title: Text('Detalhes do Usuário'),
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('ID: ${u['id']}'),
-                                Text('Nome: ${u['name']}'),
-                                Text('Email: ${u['email']}'),
-                                Text('Telefone: ${u['phone']}'),
-                                Text('Tipo: ${u['type']}'),
-                                Text('Criado em: ${u['created_at']}'),
-                                Text('Atualizado em: ${u['updated_at']}'),
-                              ],
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: Text('Fechar'),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  }).toList(),
-                ),
-        ),
-      ],
-    ),
-  );
-}
-
-// Função auxiliar para criar cartões de seção (igual ao seu exemplo)
-Widget _sectionCard({required String title, required Widget child}) {
-  return Card(
-    color: Colors.blue.withOpacity(0.2),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    margin: const EdgeInsets.symmetric(vertical: 8),
-    child: Padding(
+  // Bloco de UI para buscar e listar usuários
+  Widget _buildUsersTab(bool isMobile) {
+    return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: ListView(
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+          _sectionCard(
+            title: 'Buscar Usuários',
+            child: Column(
+              children: [
+                DropdownButtonFormField<String>(
+                  value: _filterController.text.isNotEmpty
+                      ? _filterController.text
+                      : null,
+                  decoration: _inputDecoration('Filtrar por (student|teacher)'),
+                  dropdownColor: Colors.grey[850],
+                  style: TextStyle(color: Colors.white),
+                  items: ['student', 'teacher']
+                      .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      _filterController.text = val;
+                    } else {
+                      _filterController.clear();
+                    }
+                  },
+                  hint: Text(
+                    'Selecione o tipo',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+                SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: _fetchUsers,
+                  child: Text('Buscar'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.withOpacity(0.1),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                  ),
+                ),
+              ],
             ),
           ),
-          SizedBox(height: 12),
-          child,
+          _sectionCard(
+            title: 'Resultado da Busca',
+            child: _loadingUsers
+                ? Center(child: CircularProgressIndicator())
+                : Column(
+                    children: _users.map((u) {
+                      return ListTile(
+                        title: Text(
+                          u['name'] ?? '',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        subtitle: Text(
+                          '${u['email']} • ${u['type']}',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                        trailing: SelectableText(
+                          u['id'] ?? '',
+                          style: TextStyle(fontSize: 10, color: Colors.grey),
+                        ),
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: Text('Detalhes do Usuário'),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('ID: ${u['id']}'),
+                                  Text('Nome: ${u['name']}'),
+                                  Text('Email: ${u['email']}'),
+                                  Text('Telefone: ${u['phone']}'),
+                                  Text('Tipo: ${u['type']}'),
+                                  Text('Criado em: ${u['created_at']}'),
+                                  Text('Atualizado em: ${u['updated_at']}'),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: Text('Fechar'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    }).toList(),
+                  ),
+          ),
         ],
       ),
-    ),
-  );
-}
+    );
+  }
 
+  // Função auxiliar para criar cartões de seção (igual ao seu exemplo)
+  Widget _sectionCard({required String title, required Widget child}) {
+    return Card(
+      color: Colors.blue.withOpacity(0.2),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 12),
+            child,
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1076,13 +1126,9 @@ Widget _sectionCard({required String title, required Widget child}) {
     );
   }
 
-  
   static const _screenTextStyle = TextStyle(
     fontSize: 24,
     fontWeight: FontWeight.bold,
     color: Colors.white,
   );
-
-
 }
-
