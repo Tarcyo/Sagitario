@@ -35,7 +35,7 @@ class User {
 }
 
 class AuthService {
-  static const _baseUrl = 'http://localhost:3000';
+  static const _baseUrl = 'https://sistema-de-login-final.onrender.com';
 
   /// Cria um novo usuário no servidor.
   /// Lança [ApiException] em caso de erro de requisição ou validação.
@@ -65,7 +65,7 @@ class AuthService {
       },
       body: payload,
     );
-
+   print("resposta: "+response.body);
     switch (response.statusCode) {
       case 201:
         final Map<String, dynamic> data = jsonDecode(response.body);
