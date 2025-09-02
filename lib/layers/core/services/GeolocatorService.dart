@@ -150,8 +150,7 @@ class OlaPrinter {
             try {
               final pos = await _determinePosition();
               //   print('Latitude: ${pos.latitude}, Longitude: ${pos.longitude}');
-              Provider.of<LocationProvider>(c, listen: false).location =
-                  ('Latitude: ${pos.latitude}\nLongitude: ${pos.longitude}');
+            
 
               print(
                 "Tupla: " +
@@ -170,6 +169,8 @@ class OlaPrinter {
                 pos.longitude,
                 salaDeAula.minDistance,
               );
+                Provider.of<LocationProvider>(c, listen: false).location =
+                  ('Latitude: ${pos.latitude}\nLongitude: ${pos.longitude}\n Está no local: '+estaNoLoocal.toString());
 
               final check = await registerTeacherAttendance(
                 bearerToken: Provider.of<AuthProvider>(c, listen: false).token!,

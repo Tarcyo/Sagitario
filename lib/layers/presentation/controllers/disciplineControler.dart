@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
-import '../../domain/entities/discipline.dart';
-import '../../domain/usecases/get_all_disciplines.dart';
-
+import 'package:sagitario/layers/domain/entities/discplineEntity.dart';
+import 'package:sagitario/layers/domain/useCases/getAllDiscplinesUseCase.dart';
 enum ViewState { idle, busy, error }
 
 class DisciplineController extends ChangeNotifier {

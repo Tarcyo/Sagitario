@@ -1,8 +1,7 @@
 import 'dart:convert';
-import '../../dto/discipline_model.dart';
-import '../../dto/classroom_model.dart';
-import '../../dto/user_model.dart';
-import '../../dto/schedule_model.dart';
+
+import 'package:sagitario/layers/data/dto/disciplineDTO.dart';
+
 import '../../core/api/api_client.dart';
 
 abstract class DisciplineRemoteDatasource {

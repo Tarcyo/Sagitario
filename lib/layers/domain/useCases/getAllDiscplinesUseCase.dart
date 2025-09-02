@@ -1,6 +1,6 @@
 
-import 'package:sagitario/layers/core/domain/entities/discplineEntity.dart';
-import 'package:sagitario/layers/core/domain/repositories/disciplineRepository.dart';
+import 'package:sagitario/layers/domain/entities/discplineEntity.dart';
+import 'package:sagitario/layers/domain/repositories/disciplineRepository.dart';
 
 class GetAllDisciplines {
   final DisciplineRepository repository;

@@ -4,7 +4,7 @@ class ApiClient {
   final http.Client client;
   final String baseUrl;
 
-  ApiClient(this.client, {this.baseUrl = 'https://api.example.com'});
+  ApiClient(this.client, {this.baseUrl = 'https://redusilva.github.io/agrupa-sistemas/'});
 
   Future<http.Response> get(String path) {
     final uri = Uri.parse('$baseUrl$path');

@@ -1,6 +1,7 @@
-import 'classroom.dart';
-import 'user.dart';
-import 'schedule.dart';
+
+import 'package:sagitario/layers/domain/entities/classromEntity.dart';
+import 'package:sagitario/layers/domain/entities/scheduleEntity.dart';
+import 'package:sagitario/layers/domain/entities/userEntity.dart';
 
 class Discipline {
   final String id;

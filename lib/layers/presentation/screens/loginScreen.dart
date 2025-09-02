@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:sagitario/layers/presentation/providers/authProvider.dart';
 import 'package:sagitario/layers/presentation/screens/createAccount.dart';
-import 'package:sagitario/layers/presentation/tabbar.dart';
+import 'package:sagitario/layers/presentation/screens/tabbar.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 

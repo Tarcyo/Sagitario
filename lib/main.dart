@@ -1,19 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:sagitario/layers/core/inject/inject.dart';
 import 'package:sagitario/layers/presentation/providers/authProvider.dart';
 import 'package:sagitario/layers/presentation/providers/locationProvider.dart';
 import 'package:sagitario/layers/presentation/screens/loginScreen.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-void main() => runApp(
-  MultiProvider(
-    providers: [
-      ChangeNotifierProvider(create: (_) => AuthProvider()),
-      ChangeNotifierProvider(create: (_) => LocationProvider()),
-    ],
-    child: SagitarioApp(),
-  ),
-);
+void main() async{
+
+
+    WidgetsFlutterBinding.ensureInitialized();
+
+  await initInjection();
+
+
+
+
+  
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => LocationProvider()),
+      ],
+      child: SagitarioApp(),
+    ),
+  );
+}
 
 class SagitarioApp extends StatelessWidget {
   @override

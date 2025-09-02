@@ -1,4 +1,5 @@
-import '../../domain/entities/user.dart';
+import 'package:sagitario/layers/domain/entities/userEntity.dart';
+
 
 class UserModel extends User {
   UserModel({

@@ -1,4 +1,5 @@
-import '../../domain/entities/schedule.dart';
+import 'package:sagitario/layers/domain/entities/scheduleEntity.dart';
+
 
 class ScheduleModel extends Schedule {
   ScheduleModel({
